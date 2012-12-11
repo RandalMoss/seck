@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.pcwerk.seck.crawler.FileManager;
+import com.pcwerk.seck.crawler.MasterQueue;
+
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 
@@ -64,6 +67,11 @@ public class App {
         }
         crawl();
       } else if (command.equals("crawl-info")) {
+	      if (! params.containsKey("file")) {
+	          System.out.println("Need to have \"file\" parameter point to a file to read. " +
+	          		"\n example: data/masterFile.txt");
+	          System.exit(0);
+	        }
         crawlInfo();
       } else if (command.equals("hbasetest")) {
         hbaseTest();
@@ -90,16 +98,19 @@ public class App {
   private void crawl() {
     System.out.println("[i]   crawling starts");
     
-    // put in your crawling code here -- all parameters are in params
+    FileManager.setDirectory(params.get("file"));
+    FileManager.saveHash(params.get("root-url").hashCode());
+    FileManager.populate(params.get("root-url"), Integer.parseInt(params.get("tc")));
+    MasterQueue mq = new MasterQueue(Integer.parseInt(params.get("depth")), Integer.parseInt(params.get("tc")), params.get("file"));
+    mq.runCrawl();  
     
     System.out.println("[i]   crawling ends");
   }
 
   private void crawlInfo() {
     System.out.println("[i]   display information on the crawled data");
-    
-    // put your crawling information code here -- all parameters are in params
-  }
+    FileManager.printCrawlInfo(params.get("file"));
+    }
 
   private void parseArgs(String[] argv) {
     StringBuffer sb = new StringBuffer();
